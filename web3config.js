@@ -6,7 +6,7 @@ if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
 
 const networks = {
     development: [ chains.localhost, chains.goerli ],
-    staging: [ chains.goerli ],
+    preview: [ chains.goerli ],
     production: [ chains.polygon, chains.arbitrum, chains.optimism ]
 }
 
@@ -18,7 +18,7 @@ const web3config = {
     accentColor: 'default',
     ethereum: {
       appName: 'uniswap-position-tools',
-      chains: networks[process.env.NODE_ENV],
+      chains: networks[process.env.NEXT_PUBLIC_VERCEL_ENV],
       providers: [providers.walletConnectProvider({ projectId })]
     }
 }

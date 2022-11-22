@@ -3,8 +3,8 @@ import { useNetwork, useSwitchNetwork } from '@web3modal/react'
 import { Dropdown, Image, Text } from '@nextui-org/react'
 
 const networkIcon = chain => {
-  const devChains = [null, undefined, 'localhost', 'goerli', 'rapsten']
-  const chainName = devChains.includes(chain?.name.toLowerCase()) ? 'ethereum' : chain?.name
+  const devChains = ['localhost', 'hardhat', 'goerli']
+  const chainName = devChains.includes(chain?.name.toLowerCase()) ? 'ethereum' : chain?.name.toLowerCase()
   return (
     <Image src={`https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${chainName}/info/logo.png`} alt="" css={{ width: 24 }}/>
   )

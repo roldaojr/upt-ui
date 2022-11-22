@@ -1,0 +1,356 @@
+{
+  "5": [
+    {
+      "name": "goerli",
+      "chainId": "5",
+      "contracts": {
+        "UniswapPositionTools": {
+          "address": "0x7599f34242f5f697df144c778D93C558Ba8e1F01",
+          "abi": [
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "_weth",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract IUniswapV3Factory",
+                  "name": "_factory",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract INonfungiblePositionManager",
+                  "name": "_nonfungiblePositionManager",
+                  "type": "address"
+                },
+                {
+                  "internalType": "contract ISwapRouter",
+                  "name": "_swapRouter",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "constructor"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "previousOwner",
+                  "type": "address"
+                },
+                {
+                  "indexed": true,
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "OwnershipTransferred",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint64",
+                  "name": "totalRewardX64",
+                  "type": "uint64"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint64",
+                  "name": "compounderRewardX64",
+                  "type": "uint64"
+                }
+              ],
+              "name": "RewardUpdated",
+              "type": "event"
+            },
+            {
+              "anonymous": false,
+              "inputs": [
+                {
+                  "indexed": false,
+                  "internalType": "address",
+                  "name": "account",
+                  "type": "address"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint32",
+                  "name": "maxTWAPTickDifference",
+                  "type": "uint32"
+                },
+                {
+                  "indexed": false,
+                  "internalType": "uint32",
+                  "name": "TWAPSeconds",
+                  "type": "uint32"
+                }
+              ],
+              "name": "TWAPConfigUpdated",
+              "type": "event"
+            },
+            {
+              "inputs": [],
+              "name": "MAX_REWARD_X64",
+              "outputs": [
+                {
+                  "internalType": "uint64",
+                  "name": "",
+                  "type": "uint64"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "TWAPSeconds",
+              "outputs": [
+                {
+                  "internalType": "uint32",
+                  "name": "",
+                  "type": "uint32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "factory",
+              "outputs": [
+                {
+                  "internalType": "contract IUniswapV3Factory",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "maxTWAPTickDifference",
+              "outputs": [
+                {
+                  "internalType": "uint32",
+                  "name": "",
+                  "type": "uint32"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "nonfungiblePositionManager",
+              "outputs": [
+                {
+                  "internalType": "contract INonfungiblePositionManager",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "owner",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "int24",
+                  "name": "tickLower",
+                  "type": "int24"
+                },
+                {
+                  "internalType": "int24",
+                  "name": "tickUpper",
+                  "type": "int24"
+                }
+              ],
+              "name": "remint",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "newTokenId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount0",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount1",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint128",
+                  "name": "liquidityAmount",
+                  "type": "uint128"
+                },
+                {
+                  "internalType": "enum IUniswapPositionTools.RewardConversion",
+                  "name": "conversion",
+                  "type": "uint8"
+                }
+              ],
+              "name": "removeLiquidityAndSwap",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "amount0",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "amount1",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "renounceOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint32",
+                  "name": "_maxTWAPTickDifference",
+                  "type": "uint32"
+                },
+                {
+                  "internalType": "uint32",
+                  "name": "_TWAPSeconds",
+                  "type": "uint32"
+                }
+              ],
+              "name": "setTWAPConfig",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "tokenId",
+                  "type": "uint256"
+                }
+              ],
+              "name": "swapAndCompound",
+              "outputs": [
+                {
+                  "internalType": "uint256",
+                  "name": "compounded0",
+                  "type": "uint256"
+                },
+                {
+                  "internalType": "uint256",
+                  "name": "compounded1",
+                  "type": "uint256"
+                }
+              ],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "swapRouter",
+              "outputs": [
+                {
+                  "internalType": "contract ISwapRouter",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            },
+            {
+              "inputs": [
+                {
+                  "internalType": "address",
+                  "name": "newOwner",
+                  "type": "address"
+                }
+              ],
+              "name": "transferOwnership",
+              "outputs": [],
+              "stateMutability": "nonpayable",
+              "type": "function"
+            },
+            {
+              "inputs": [],
+              "name": "weth",
+              "outputs": [
+                {
+                  "internalType": "address",
+                  "name": "",
+                  "type": "address"
+                }
+              ],
+              "stateMutability": "view",
+              "type": "function"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "1337": [
+    {
+      "name": "hardhat",
+      "chainId": "1337",
+      "contracts": {}
+    }
+  ]
+}

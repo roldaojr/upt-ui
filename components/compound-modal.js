@@ -34,11 +34,11 @@ const CompoundModal = ({ visible = true, onClose, tokenId }) => {
           <Fragment>
             <Row>
               <TokenLogo address={token0?.address} size="xs"/>
-              {tokensOwed0?.toString()} {token0?.symbol}
+              {tokensOwed0?.toSignificant()} {token0?.symbol}
             </Row>
             <Row>
               <TokenLogo address={token1?.address} size="xs"/>
-              {tokensOwed1?.toString()} {token1?.symbol}
+              {tokensOwed1?.toSignificant()} {token1?.symbol}
             </Row>
           </Fragment>
         )}
@@ -47,8 +47,7 @@ const CompoundModal = ({ visible = true, onClose, tokenId }) => {
         {approval.data ? (
           <Button size="lg" css={{ width: "$full" }}
             disabled={position.isLoading || compound.isLoading}
-            onPress={onConfirm}
-            visible={true}
+            onPress={onConfirm} 
           >Compound</Button>
         ) : (
           <Button size="lg" css={{ width: "$full" }}

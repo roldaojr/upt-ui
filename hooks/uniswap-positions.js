@@ -1,17 +1,16 @@
 import { useMutation, useQueries, useQuery } from 'react-query'
-import { toast } from 'react-toastify'
 import { SignerCtrl } from '@web3modal/core'
 import { ethers } from 'ethers'
 import IUniswapV3Pool from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
 import INonfungiblePositionManager from '@uniswap/v3-periphery/artifacts/contracts/NonfungiblePositionManager.sol/NonfungiblePositionManager.json'
 import IERC20Metadata from '@uniswap/v3-periphery/artifacts/contracts/interfaces/IERC20Metadata.sol/IERC20Metadata.json'
-import { Token } from '@uniswap/sdk-core'
+import { Token, CurrencyAmount } from '@uniswap/sdk-core'
 import { Pool, Position } from '@uniswap/v3-sdk'
 import { getAppContractAddress } from '../utils'
 import { onErrorToast, transactionToast } from '../utils'
 
 
-const uniswapPositionManager = new ethers.Contract(
+export const uniswapPositionManager = new ethers.Contract(
     '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
     INonfungiblePositionManager.abi
 )
@@ -86,10 +85,12 @@ const getPosition = async id => {
     const signer = await SignerCtrl.fetch()
     const {
         token0, token1, fee, liquidity, tickLower, tickUpper,
-        ...extra
+        tokensOwed0, tokensOwed1, ...extra
     } = await uniswapPositionManager.connect(signer).positions(id)
     const pool = await getPool(token0, token1, fee, signer)
     const position = new Position({pool, liquidity, tickLower, tickUpper})
+    position.tokensOwed0 = CurrencyAmount.fromRawAmount(pool.token0, tokensOwed0)
+    position.tokensOwed1 = CurrencyAmount.fromRawAmount(pool.token1, tokensOwed1)
     for(let prop in extra) {
         position[prop] = extra[prop]
     }
@@ -137,13 +138,17 @@ export const useFetchPostionById = (id, options) => {
     )
 }
 
-export const useFetchPositions = (options = {}) => {
-    const positionsIds = useQuery(["positions"], getPositions)
+export const useFetchPositions = (isConnected, options = {}) => {
+    const positionsIds = useQuery(
+        ["positions"],
+        getPositions,
+        {enabled: isConnected}
+    )
     const positions = useQueries(
         (positionsIds.data || []).map(id => ({
             queryKey: ['positions', id],
             queryFn: () => getPosition(id),
-            enabled: !positionsIds.isLoading,
+            enabled: isConnected && !positionsIds.isLoading,
             ...onErrorToast(options)
         }))
     )

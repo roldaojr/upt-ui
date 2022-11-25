@@ -1,4 +1,3 @@
-import JSBI from 'jsbi';
 import {
   Grid, Card, Button, Row, Text, Badge, Avatar, Col
 } from '@nextui-org/react'
@@ -11,9 +10,6 @@ const PositionCard = ({ position, onAction }) => {
     tokensOwed0, tokensOwed1,
     token0PriceLower, token0PriceUpper
   } = position || {pool: {}}
-
-  // if position is close don't show
-  if(position && JSBI.toNumber(position.liquidity) == 0) return ''
 
   return (
     <Card>
@@ -50,23 +46,29 @@ const PositionCard = ({ position, onAction }) => {
               </Grid>
               <Grid xs={12} sm={4} direction='column'>
                 <Text weight="bold">Fees owed</Text>
-                <TokenAmount token={token0} amount={tokensOwed0?.toString()}/>
-                <TokenAmount token={token1} amount={tokensOwed1?.toString()}/>
+                <TokenAmount token={token0} amount={tokensOwed0?.toSignificant()}/>
+                <TokenAmount token={token1} amount={tokensOwed1?.toSignificant()}/>
               </Grid>
             </Grid.Container>
           </Grid>
           <Grid xs={12} sm={3} direction="column" justify="center">
-            <Button.Group size="md" vertical bordered gap={2}>
-              <Button css={{width:'$full'}}
-                onPress={() => onAction("compound", position.id)}
-              >Compound fees</Button>
-              <Button css={{width:'$full'}}
-                onPress={() => onAction("change-range", position.id)}
-              >Change price range</Button>
-              <Button css={{width:'$full'}}
-                onPress={() => onAction("close", position.id)}
-              >Close and Swap</Button>
-            </Button.Group>
+            <Grid.Container gap={1}>
+              <Grid xs={12}>
+                <Button css={{width:'$full'}}
+                  onPress={() => onAction("compound", position.id)}
+                >Compound fees</Button>
+              </Grid>
+              <Grid xs={12}>
+                <Button css={{width:'$full'}}
+                  onPress={() => onAction("change-range", position.id)}
+                >Change price range</Button>
+              </Grid>
+              <Grid xs={12}>
+                <Button css={{width:'$full'}}
+                  onPress={() => onAction("close", position.id)}
+                >Close and Swap</Button>
+              </Grid>
+            </Grid.Container>
           </Grid>
         </Grid.Container>
       </Card.Body>

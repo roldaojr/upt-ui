@@ -30,6 +30,7 @@ const PositionListPage = () => {
         <>
           <Row justify="space-between">
             <ApproveForAllButton/>
+            <TestButton/>
             <Button
               auto disabled={positions.isLoading}
               onPress={() => queryClient.invalidateQueries("positions")}

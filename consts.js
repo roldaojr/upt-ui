@@ -1,2 +1,0 @@
-export const NonfungiblePositionManagerAddress = '0xC36442b4a4522E871399CD717aBDD847Ab11FE88'
-export const MainContractAddress = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS

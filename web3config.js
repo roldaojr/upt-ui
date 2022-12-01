@@ -1,4 +1,5 @@
 import { chains, providers } from '@web3modal/ethereum'
+import appContracts from './contracts.json'
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
     throw new Error('You need to provide NEXT_PUBLIC_PROJECT_ID env variable')
@@ -18,10 +19,14 @@ export const chainIcons = {
     polygonMumbai: trustWalletIcon("polygon"),
 }
 
+const availableChains = Object.values(chains).filter(
+    c => Object.keys(appContracts).includes(c.id.toString())
+)
+
 const networks = {
-    development: [ chains.localhost, chains.goerli ],
-    preview: [ chains.goerli, chains.polygonMumbai ],
-    production: [ chains.polygon, chains.arbitrum, chains.optimism ]
+    development: [chains.localhost].concat(availableChains.filter(c => c.testnet)),
+    preview: availableChains.filter(c => c.testnet),
+    production: availableChains.filter(c => !c.testnet)
 }
 
 const currentEnv = (
@@ -36,9 +41,9 @@ const web3config = {
     accentColor: 'default',
     enableNetworkView: true,
     ethereum: {
-      appName: 'uniswap-position-tools',
-      chains: networks[currentEnv],
-      providers: [providers.walletConnectProvider({ projectId })]
+        appName: 'uniswap-position-tools',
+        chains: networks[currentEnv],
+        providers: [providers.walletConnectProvider({ projectId })]
     }
 }
 

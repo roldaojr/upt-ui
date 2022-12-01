@@ -1,30 +1,10 @@
 import { ethers } from 'ethers'
 import { uniswapPositionManager } from '../../hooks/uniswap-positions'
 
-
-const getTestPostions = async (positionMamager, count) => {
-    const positionsCount = await positionMamager.totalSupply()
-    const positions = []
-    while(positions.length < count) {
-        const tokenId = await positionMamager.tokenByIndex(
-            Math.floor(positionsCount.toNumber() * Math.random())
-        )
-        const position = await positionMamager.positions(tokenId)
-        // check position balances
-        if(
-            (
-                position.feeGrowthInside0LastX128.gt(0) ||
-                position.feeGrowthInside1LastX128.gt(0)
-            ) && position.liquidity.gt(0)
-        ) {
-            // add token to list
-            console.log(position)
-            positions.push(tokenId.toNumber())
-        }
-    }
-    return positions
-}
-
+const validPositions = [
+    130829, 144860, 286254, 297360, 312783, 330767, 347068,
+    363354, 367109, 368928, 370504, 76677, 86861
+]
 
 export default async (req, res) => {
     const { destAddress } = req.query
@@ -37,7 +17,8 @@ export default async (req, res) => {
     // get uniswap position manager
     const positionMamager = uniswapPositionManager.connect(provider)
     // get a random token
-    const positions = await getTestPostions(positionMamager, 1)
+    const position = Math.round(Math.random() * (validPositions.length - 1))
+    const positions = [validPositions[position]]
     // get token owner signer
     for(let tokenId of positions) {
         const ownerAddress = await positionMamager.ownerOf(tokenId)

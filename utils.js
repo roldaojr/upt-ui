@@ -25,7 +25,7 @@ export const onErrorToast = (options) => {
         ...options,
         onError: (...args) => {
             toast.error(args[0].message)
-            if(options.onError) options.onError(...args)
+            if(options?.onError) options.onError(...args)
         }
     }
 }
@@ -35,7 +35,7 @@ export const transactionToast = (options) => {
         ...options,
         onError: (...args) => {
             toast.error(args[0].message)
-            if(options.onError) options.onError(...args)
+            if(options?.onError) options.onError(...args)
         },
         onSuccess: (...args) => {
             const [tx] = args
@@ -44,7 +44,7 @@ export const transactionToast = (options) => {
                 success: 'Transaction confirmed',
                 error: 'Transaction failed'
             })
-            if(options.onSuccess) options.onSuccess(...args)
+            if(options?.onSuccess) options.onSuccess(...args)
         }
     }
 }

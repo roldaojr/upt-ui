@@ -1,12 +1,12 @@
 import { Fragment, useCallback } from 'react'
-import { Button, Loading, Modal, Row, Text, Avatar } from '@nextui-org/react'
+import { Button, Loading, Modal, Row, Text } from '@nextui-org/react'
 import { TokenLogo } from './token-logo'
 import {
   useFetchPostionById, useApprovePosition
 } from '../hooks/uniswap-positions'
 import { useContractMutation } from '../hooks/app-contracts'
 
-const CompoundModal = ({ visible = true, onClose, tokenId }) => {
+const CompoundModal = ({ open, onClose, tokenId }) => {
   const position = useFetchPostionById(tokenId)
   const {
     pool: { token0, token1 }, tokensOwed0, tokensOwed1,
@@ -23,7 +23,7 @@ const CompoundModal = ({ visible = true, onClose, tokenId }) => {
   }, [compound, tokenId])
 
   return (
-    <Modal closeButton aria-labelledby="modal-title" open={visible} onClose={onClose}>
+    <Modal closeButton aria-labelledby="modal-title" open={open} onClose={onClose}>
       <Modal.Header>
         <Text id="modal-title">Collect and compound fees?</Text>
       </Modal.Header>

@@ -107,13 +107,15 @@ export const getPositions = async () => {
     const positionCount = await positionManager.balanceOf(address)
     const index = [...Array(positionCount.toNumber()).keys()]
     const positions = await Promise.all(index.map(async i => {
-        return positionManager.tokenOfOwnerByIndex(address, i)
+        const tokenId = await positionManager.tokenOfOwnerByIndex(address, i)
+        return tokenId.toNumber()
     }))
-    return positions
+    return positions.sort((a, b) => a - b)
 }
 
 export const isApprovedForAll = async () => {
     const signer = await SignerCtrl.fetch()
+    if(!signer) return false
     const address = await signer.getAddress()
     const chainId = await signer.getChainId()
     return uniswapPositionManager.connect(signer).isApprovedForAll(
@@ -131,7 +133,8 @@ export const isApprovedToken = async (tokenId) => {
     ))
 }
 
-export const useFetchPostionById = (id, options) => {
+export const useFetchPostionById = (id, options = {}) => {
+    options.enabled = !!id
     return useQuery(
         ["positions", id], () => getPosition(id),
         onErrorToast(options)
@@ -169,9 +172,9 @@ export const useFetchApprovedForAll = (options) => {
     return useQuery(["approved-for-all"], isApprovedForAll, onErrorToast(options))
 }
 
-export const useApprovalForAll = (options) => {
+export const useApprovalForAll = (options = {}) => {
     const approved = useFetchApprovedForAll(options)
-    const approval = useMutation(["approved-for-all"], async () => {
+    const approval = useMutation(["approve-for-all"], async () => {
         const signer = await SignerCtrl.fetch()
         const chainId = await signer.getChainId()
         return uniswapPositionManager.connect(signer).setApprovalForAll(
@@ -203,7 +206,7 @@ export const useIsApproved = (tokenId, options = {}) => {
 
 export const useApprovePosition = (tokenId, options = {}) => {
     const approved = useIsApproved(tokenId)
-    const approval = useMutation(async () => {
+    const approval = useMutation(["approve", tokenId], async () => {
         const signer = await SignerCtrl.fetch()
         const address = getAppContractAddress(
             'UniswapPositionTools', await signer.getChainId()

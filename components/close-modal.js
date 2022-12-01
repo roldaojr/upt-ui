@@ -5,7 +5,7 @@ import {
 } from '../hooks/uniswap-positions'
 import { useContractMutation } from '../hooks/app-contracts'
 
-const RemoveLiqSwapModal = ({visible, onClose, tokenId}) => {
+const RemoveLiqSwapModal = ({open, onClose, tokenId}) => {
   // fetch token info
   const { data: position } = useFetchPostionById(tokenId)
   const {
@@ -28,7 +28,7 @@ const RemoveLiqSwapModal = ({visible, onClose, tokenId}) => {
   }
 
   return (
-    <Modal closeButton aria-labelledby="modal-title" open={visible} onClose={onClose}>
+    <Modal closeButton aria-labelledby="modal-title" open={open} onClose={onClose}>
       <form onSubmit={handleSubmit(formSubmit)}>
         <Modal.Header>
           <Text id="modal-title">Remove Liquidity and swap tokens</Text>

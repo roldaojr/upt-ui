@@ -7,13 +7,12 @@ import {
 } from '../hooks/uniswap-positions'
 import { useContractMutation } from '../hooks/app-contracts'
 import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 
-const ChangeRangeModal = ({ visible, onClose, tokenId }) => {
+const ChangeRangeModal = ({ open, onClose, tokenId }) => {
   // fetch token info
-  const { data: position, isLoading, error } = useFetchPostionById(tokenId)
-  const {
-    pool: { token0, token1, tickSpacing }
-  } = position || {pool: {}}
+  const { data: position, isLoading } = useFetchPostionById(tokenId)
+  const { pool } = position || {pool: {}}
   // token approve hooks
   const isApproved = useIsApproved(tokenId)
   const approve = useApprovePosition(tokenId)
@@ -22,36 +21,42 @@ const ChangeRangeModal = ({ visible, onClose, tokenId }) => {
     "UniswapPositionTools", "remint", {onSuccess: onClose}
   )
   // form hook
-  const { register, handleSubmit } = useForm({
-    defaultValues: {
-      priceLower: position?.token0PriceLower.toSignificant(),
-      priceUpper: position?.token0PriceUpper.toSignificant()
-    }
-  })
+  const { register, handleSubmit, reset: formReset } = useForm()
+
   const formSubmit = ({ priceLower, priceUpper }) => {
     // convert prices to ticks
     const [tickLower, tickUpper] = [priceLower, priceUpper].map(value => {
       const price = new Price(
-        token0, token1,
-        ethers.utils.parseUnits("1", token1.decimals),
-        ethers.utils.parseUnits(value, token0.decimals)
+        pool.token0, pool.token1,
+        ethers.utils.parseUnits("1", pool.token1.decimals),
+        ethers.utils.parseUnits(value, pool.token0.decimals)
       )
-      return nearestUsableTick(priceToClosestTick(price), tickSpacing)
+      return nearestUsableTick(priceToClosestTick(price), pool.tickSpacing)
     })
+    console.log([
+      tokenId,
+      tickLower, tickUpper,
+      priceLower, priceUpper
+    ])
     remint.mutate([tokenId, tickLower, tickUpper])
   }
 
-  if(!isLoading && error) console.error(error)
+  useEffect(() => {
+    formReset({
+      "priceLower": position?.token0PriceLower.toSignificant(),
+      "priceUpper": position?.token0PriceUpper.toSignificant()
+    })
+  }, [position])
 
   return (
-    <Modal closeButton aria-labelledby="modal-title" open={visible} onClose={onClose}>
+    <Modal closeButton aria-labelledby="modal-title" open={open} onClose={onClose}>
       <form onSubmit={handleSubmit(formSubmit)}>
         <Modal.Header>
           <Text id="modal-title">Change Price Range</Text>
         </Modal.Header>
         <Modal.Body>
-          <Input size="lg" input="number" {...register("priceLower")} label="Min Price"/>
-          <Input size="lg" input="number" {...register("priceUpper")} label="Max price"/>
+          <Input size="lg" input="number" label="Min Price" {...register("priceLower")} />
+          <Input size="lg" input="number" label="Max price" {...register("priceUpper")} />
         </Modal.Body>
         <Modal.Footer>
           {!!isApproved.data ? (

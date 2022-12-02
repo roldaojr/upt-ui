@@ -33,11 +33,6 @@ const ChangeRangeModal = ({ open, onClose, tokenId }) => {
       )
       return nearestUsableTick(priceToClosestTick(price), pool.tickSpacing)
     })
-    console.log([
-      tokenId,
-      tickLower, tickUpper,
-      priceLower, priceUpper
-    ])
     remint.mutate([tokenId, tickLower, tickUpper])
   }
 
@@ -46,7 +41,7 @@ const ChangeRangeModal = ({ open, onClose, tokenId }) => {
       "priceLower": position?.token0PriceLower.toSignificant(),
       "priceUpper": position?.token0PriceUpper.toSignificant()
     })
-  }, [position])
+  }, [position, formReset])
 
   return (
     <Modal closeButton aria-labelledby="modal-title" open={open} onClose={onClose}>

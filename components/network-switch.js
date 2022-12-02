@@ -7,7 +7,7 @@ const networkIcon = chain => {
   const devChains = ['localhost', 'hardhat', 'goerli']
   const chainName = devChains.includes(chain?.name.toLowerCase()) ? 'ethereum' : chain?.name.toLowerCase()
   return (
-    <Image src={chainIcons[chainName] || chainIcons.unknown} css={{ width: 24 }}/>
+    <Image src={chainIcons[chainName] || chainIcons.unknown} alt="" css={{ width: 24 }}/>
   )
 }
 

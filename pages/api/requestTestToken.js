@@ -6,7 +6,7 @@ const validPositions = [
     363354, 367109, 368928, 370504, 76677, 86861
 ]
 
-export default async (req, res) => {
+const requestTestToken = async (req, res) => {
     const { destAddress } = req.query
     // get provider
     const provider = new ethers.providers.JsonRpcProvider()
@@ -35,3 +35,5 @@ export default async (req, res) => {
     }
     return res.json(positions)
 }
+
+export default requestTestToken

@@ -24,8 +24,8 @@ const availableChains = Object.values(chains).filter(
 )
 
 const networks = {
-    development: [chains.localhost].concat(availableChains.filter(c => c.testnet)),
-    preview: availableChains.filter(c => c.testnet),
+    development: [chains.localhost].concat(availableChains),
+    preview: availableChains,
     production: availableChains.filter(c => !c.testnet)
 }
 

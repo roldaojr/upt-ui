@@ -1,4 +1,5 @@
 import { useMutation, useQueries, useQuery } from 'react-query'
+import { useAccount } from '@web3modal/react'
 import { SignerCtrl } from '@web3modal/core'
 import { ethers } from 'ethers'
 import IUniswapV3Pool from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
@@ -141,17 +142,18 @@ export const useFetchPostionById = (id, options = {}) => {
     )
 }
 
-export const useFetchPositions = (isConnected, options = {}) => {
+export const useFetchPositions = (options = {}) => {
+    const { account } = useAccount()
     const positionsIds = useQuery(
         ["positions"],
         getPositions,
-        {enabled: isConnected}
+        {enabled: account.isConnected}
     )
     const positions = useQueries(
         (positionsIds.data || []).map(id => ({
             queryKey: ['positions', id],
             queryFn: () => getPosition(id),
-            enabled: isConnected && !positionsIds.isLoading,
+            enabled: account.isConnected && !positionsIds.isLoading,
             ...onErrorToast(options)
         }))
     )

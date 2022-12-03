@@ -12,7 +12,7 @@ import TestButton from '../components/test-button'
 
 const PositionListPage = () => {
   const { account } = useAccount()
-  const positions = useFetchPositions(account.isConnected)
+  const positions = useFetchPositions()
   const [ tokenId, setTokenId ] = useState()
   const [ openModal, setModal ] = useState()
   const noModal = () => {

@@ -1,4 +1,4 @@
-import { useMutation, useQueries, useQuery } from 'react-query'
+import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
 import { useAccount } from '@web3modal/react'
 import { SignerCtrl } from '@web3modal/core'
 import { ethers } from 'ethers'
@@ -175,6 +175,7 @@ export const useFetchApprovedForAll = (options) => {
 }
 
 export const useApprovalForAll = (options = {}) => {
+    const queryClient = useQueryClient()
     const approved = useFetchApprovedForAll(options)
     const approval = useMutation(["approve-for-all"], async () => {
         const signer = await SignerCtrl.fetch()
@@ -182,7 +183,13 @@ export const useApprovalForAll = (options = {}) => {
         return uniswapPositionManager.connect(signer).setApprovalForAll(
             getAppContractAddress("UniswapPositionTools", chainId), !approved.data
         )
-    }, transactionToast(options))
+    }, transactionToast({
+        ...options,
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries(["approved-for-all"])
+            if(options.onSuccess) options.onSuccess(...args)
+        }
+    }))
     return {
         data: approved.data,
         isLoading: approved.isLoading || approval.isLoading,
@@ -198,7 +205,7 @@ export const useIsApproved = (tokenId, options = {}) => {
     const allapproved = useApprovalForAll(options)
     const approvved = useQuery(["positions", tokenId, "approved"], async () => {
         return isApprovedToken(tokenId)
-    }, onErrorToast({...options, enabled: !allapproved.isLoading,}))
+    }, onErrorToast({...options, enabled: !allapproved.isLoading}))
     return {
         data: allapproved.data || approvved.data,
         isLoading: allapproved.isLoading || approvved.isLoading,
@@ -207,6 +214,7 @@ export const useIsApproved = (tokenId, options = {}) => {
 }
 
 export const useApprovePosition = (tokenId, options = {}) => {
+    const queryClient = useQueryClient()
     const approved = useIsApproved(tokenId)
     const approval = useMutation(["approve", tokenId], async () => {
         const signer = await SignerCtrl.fetch()
@@ -216,7 +224,13 @@ export const useApprovePosition = (tokenId, options = {}) => {
         return uniswapPositionManager.connect(signer).approve(
             address, tokenId, { gasLimit: 500000 }
         )
-    }, transactionToast(options))
+    }, transactionToast({
+        ...options,
+        onSuccess: (...args) => {
+            queryClient.invalidateQueries(["positions", tokenId, "approved"])
+            if(options.onSuccess) options.onSuccess(...args)
+        }
+    }))
     return {
         data: approved.data,
         isLoading: approval.isLoading || approved.isLoading,

@@ -14,7 +14,7 @@ export const TestButton = () => {
         const address = await signer.getAddress()
         return fetch(`/api/requestTestToken?destAddress=${address}`)
     }, {
-        onSuccess: () => queryClient.invalidateQueries("positions")
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ["positions"] })
     })
     if(!testNetworks.includes(network?.chain?.network)) return null
 

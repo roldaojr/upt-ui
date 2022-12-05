@@ -8,7 +8,9 @@ import CloseModal from '../components/close-modal'
 import { useFetchPositions } from '../hooks/uniswap-positions'
 import { useAccount } from '@web3modal/react'
 import { ApproveForAllButton } from '../components/approve-for-all-button'
-import TestButton from '../components/test-button'
+import { TestButton } from '../components/test-button'
+import { RefreshButton } from '../components/refresh-button'
+
 
 const PositionListPage = () => {
   const { account } = useAccount()
@@ -31,6 +33,7 @@ const PositionListPage = () => {
           <Row justify="space-between">
             <ApproveForAllButton/>
             <TestButton/>
+            <RefreshButton/>
           </Row>
           <Spacer/>
           {positions.isLoading ? (

@@ -1,13 +1,12 @@
 import { Button, Input, Modal, Text } from '@nextui-org/react'
-import { Price } from '@uniswap/sdk-core'
-import { nearestUsableTick, priceToClosestTick } from '@uniswap/v3-sdk'
-import { ethers } from 'ethers'
+import { useForm } from 'react-hook-form'
+import { useEffect } from 'react'
 import {
   useApprovePosition, useFetchPostionById, useIsApproved
 } from '../hooks/uniswap-positions'
 import { useContractMutation } from '../hooks/app-contracts'
-import { useForm } from 'react-hook-form'
-import { useEffect } from 'react'
+import { tryParseTick } from '../lib/price-utils'
+
 
 const ChangeRangeModal = ({ open, onClose, tokenId }) => {
   // fetch token info
@@ -21,18 +20,21 @@ const ChangeRangeModal = ({ open, onClose, tokenId }) => {
     "UniswapPositionTools", "remint", {onSuccess: onClose}
   )
   // form hook
-  const { register, handleSubmit, reset: formReset } = useForm()
+  const { register, handleSubmit, reset: formReset } = useForm({
+    mode: 'onBlur',
+    resolver: async ({priceLower, priceUpper}) => {
+      const errors = {}
+      const values = {
+        tickLower: tryParseTick(pool.token0, pool.token1, pool.fee, priceLower),
+        tickUpper: tryParseTick(pool.token0, pool.token1, pool.fee, priceUpper)
+      }
+      if(values.tickLower == undefined) errors.tickLower = "Invalid value"
+      if(values.tickUpper == undefined) errors.tickUpper = "Invalid value"
+      return { values, errors }
+    }
+  })
 
-  const formSubmit = ({ priceLower, priceUpper }) => {
-    // convert prices to ticks
-    const [tickLower, tickUpper] = [priceLower, priceUpper].map(value => {
-      const price = new Price(
-        pool.token0, pool.token1,
-        ethers.utils.parseUnits("1", pool.token1.decimals),
-        ethers.utils.parseUnits(value, pool.token0.decimals)
-      )
-      return nearestUsableTick(priceToClosestTick(price), pool.tickSpacing)
-    })
+  const formSubmit = ({ tickLower, tickUpper }) => {
     remint.mutate([tokenId, tickLower, tickUpper])
   }
 

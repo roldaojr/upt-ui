@@ -13,8 +13,9 @@ export const useContractMutation = (
         return contract.connect(signer)[functionName](...args)
     }, transactionToast({
         ...options,
-        onSuccess: () => {
+        onSuccess: (...args) => {
             queryClient.invalidateQueries({ queryKey: ["positions"] })
+            if(options.onSuccess) options.onSuccess(...args)
         }
     }))
 }

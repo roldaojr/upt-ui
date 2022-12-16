@@ -11,13 +11,13 @@ export const useContractMutation = (
         const chainId = await signer.getChainId()
         const contract = getAppContract(contractName, chainId)
         return contract.connect(signer)[functionName](...args)
-    }, transactionToast({
+    }, {
         ...options,
         onSuccess: (...args) => {
             queryClient.invalidateQueries({ queryKey: ["positions"] })
             if(options.onSuccess) options.onSuccess(...args)
         }
-    }))
+    })
 }
 
 export default { useContractMutation }

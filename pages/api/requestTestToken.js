@@ -1,39 +1,58 @@
 import { ethers } from 'ethers'
 import { uniswapPositionManager } from '../../hooks/uniswap-positions'
 
-const validPositions = [
-    130829, 144860, 286254, 297360, 312783, 330767, 347068,
-    363354, 367109, 368928, 370504, 76677, 86861
-]
+const MAX_UINT128 = ethers.BigNumber.from(2).pow(128).sub(1)
+const provider = new ethers.providers.JsonRpcProvider()
+const positionMamager = uniswapPositionManager.connect(provider)
+
+function randomInteger(min, max) {
+    return Math.floor(Math.random() * (max - min) ) + min;
+}
 
 const requestTestToken = async (req, res) => {
     const { destAddress } = req.query
-    // get provider
-    const provider = new ethers.providers.JsonRpcProvider()
     // add ETH balance to wallet
     await provider.send("hardhat_setBalance", [
         destAddress, ethers.utils.parseEther("1").toHexString().replace("0x0", "0x")
     ])
-    // get uniswap position manager
-    const positionMamager = uniswapPositionManager.connect(provider)
-    // get a random token
-    const position = Math.round(Math.random() * (validPositions.length - 1))
-    const positions = [validPositions[position]]
-    // get token owner signer
-    for(let tokenId of positions) {
-        const ownerAddress = await positionMamager.ownerOf(tokenId)
-        await provider.send("hardhat_setBalance", [
-            ownerAddress, ethers.utils.parseEther("1").toHexString().replace("0x0", "0x")
-        ])
-        await provider.send("hardhat_impersonateAccount", [ownerAddress])
-        const ownerSigner = provider.getSigner(ownerAddress)
-        const tx = await uniswapPositionManager.connect(ownerSigner)["safeTransferFrom(address,address,uint256)"](
-            ownerAddress, destAddress, tokenId, { gasLimit: 500000 }
+    // get total positions
+    const totalPositions = await positionMamager.totalSupply()
+    // check random tokenId and check if is valid
+    let tokenId, ownerAddress, validTokenId = null
+    do {
+        tokenId = await positionMamager.tokenByIndex(
+            randomInteger(20000, totalPositions.toNumber())
         )
-        await provider.send("hardhat_stopImpersonatingAccount", [ownerAddress])
-        await tx.wait()
-    }
-    return res.json(positions)
+        ownerAddress = await positionMamager.ownerOf(tokenId)
+        if(ownerAddress == destAddress) continue
+        const position = await positionMamager.positions(tokenId)
+        if(position.liquidity.eq(0)) continue
+        const { amount0, amount1 } = await uniswapPositionManager.connect(
+            provider
+        ).callStatic.collect({
+            tokenId,
+            recipient: ownerAddress,
+            amount0Max: MAX_UINT128,
+            amount1Max: MAX_UINT128
+        }, {from: ownerAddress})
+        if(amount0.eq(0) && amount1.eq(0)) continue
+        validTokenId = tokenId
+    } while(!validTokenId)
+    console.debug(`Valid token found ${tokenId}`)
+    // send token to dest
+    await provider.send("hardhat_setBalance", [
+        ownerAddress, ethers.utils.parseEther("1").toHexString().replace("0x0", "0x")
+    ])
+    await provider.send("hardhat_impersonateAccount", [ownerAddress])
+    const tx = await uniswapPositionManager.connect(
+        provider.getSigner(ownerAddress)
+    )["safeTransferFrom(address,address,uint256)"](
+        ownerAddress, destAddress, tokenId
+    )
+    await provider.send("hardhat_stopImpersonatingAccount", [ownerAddress])
+    await tx.wait()
+    // return tokenId
+    return res.json([validTokenId])
 }
 
 export default requestTestToken

@@ -1,10 +1,9 @@
 import { useRouter } from 'next/router'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import {
   Container, Button, Loading, Card, Grid, Row, Text
 } from '@nextui-org/react'
 import { TokenLogo } from '../../components/token-logo'
-import { TransactionModal } from '../../components/transaction-modal'
 import {
   useFetchPostionById, useApprovePosition
 } from '../../hooks/uniswap-positions'
@@ -75,7 +74,6 @@ const CompoundPage = () => {
           </Grid.Container>
         </Card.Footer>
       </Card>
-      <TransactionModal status=""/>
     </Container>
   )
 }

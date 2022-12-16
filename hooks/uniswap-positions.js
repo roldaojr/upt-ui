@@ -10,6 +10,7 @@ import { Pool, Position } from '@uniswap/v3-sdk'
 import { getAppContractAddress } from '../utils'
 import { onErrorToast, transactionToast } from '../utils'
 
+const MAX_UINT128 = ethers.BigNumber.from(2).pow(128).sub(1)
 
 export const uniswapPositionManager = new ethers.Contract(
     '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
@@ -82,19 +83,33 @@ const getPool = async (token0address, token1address, fee, provider) => {
     )
 }
 
+export const getPositionFees = async (id) => {
+    const signer = await SignerCtrl.fetch()
+    const signerAddress = await signer.getAddress()
+    const { amount0, amount1 } = await uniswapPositionManager.connect(
+        signer
+    ).callStatic.collect({
+        tokenId: id,
+        recipient: signerAddress,
+        amount0Max: MAX_UINT128,
+        amount1Max: MAX_UINT128
+    })
+    return [ amount0, amount1 ]
+}
+
 const getPosition = async id => {
     const signer = await SignerCtrl.fetch()
     const {
-        token0, token1, fee, liquidity, tickLower, tickUpper,
-        tokensOwed0, tokensOwed1, ...extra
+        token0, token1, fee, liquidity, tickLower, tickUpper, ...extra
     } = await uniswapPositionManager.connect(signer).positions(id)
     const pool = await getPool(token0, token1, fee, signer)
     const position = new Position({pool, liquidity, tickLower, tickUpper})
-    position.tokensOwed0 = CurrencyAmount.fromRawAmount(pool.token0, tokensOwed0)
-    position.tokensOwed1 = CurrencyAmount.fromRawAmount(pool.token1, tokensOwed1)
     for(let prop in extra) {
         position[prop] = extra[prop]
     }
+    const [ fees0, fees1 ] = await getPositionFees(id)
+    position.tokensOwed0 = CurrencyAmount.fromRawAmount(pool.token0, fees0)
+    position.tokensOwed1 = CurrencyAmount.fromRawAmount(pool.token1, fees1)
     position.id = id
     return position
 }
@@ -247,5 +262,5 @@ export default {
     useFetchPostionById,
     useApprovalForAll,
     useIsApproved,
-    useApprovePosition,
+    useApprovePosition
 }

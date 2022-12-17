@@ -1,4 +1,8 @@
-import { chains, providers } from '@web3modal/ethereum'
+import { configureChains, createClient } from "wagmi"
+import { EthereumClient, modalConnectors, walletConnectProvider } from "@web3modal/ethereum"
+import { InjectedConnector } from 'wagmi/connectors/injected'
+import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+import * as allchains from 'wagmi/chains'
 import appContracts from './contracts.json'
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
@@ -19,32 +23,41 @@ export const chainIcons = {
     polygonMumbai: trustWalletIcon("polygon"),
 }
 
-const availableChains = Object.values(chains).filter(
+const availableChains = Object.values(allchains).filter(
     c => Object.keys(appContracts).includes(c.id.toString())
 )
 
-const networks = {
-    development: [chains.localhost].concat(availableChains.filter(c => c.network != "localhost")),
-    preview: availableChains.filter(c => c.network != "localhost"),
-    production: availableChains.filter(c => !c.testnet && c.network != "localhost")
+let chains
+
+switch(process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV) {
+    case "development":
+        chains = [allchains.localhost].concat(availableChains.filter(c => c.network != "localhost"))
+        break
+    case "preview":
+        chains = availableChains.filter(c => c.network != "localhost")
+        break
+    default:
+        chains = availableChains.filter(c => !c.testnet && c.network != "localhost")
+        break
 }
 
-const currentEnv = (
-    process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV
+export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
+
+const { provider, webSocketProvider } = configureChains(
+    chains, [ walletConnectProvider({ projectId }) ]
 )
 
-const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
+export const wagmiClient = createClient({
+    connectors: modalConnectors({ appName: "upt", chains }),
+    autoConnect: true,
+    provider,
+    webSocketProvider
+})
 
-const web3config = {
-    projectId,
-    theme: 'light',
-    accentColor: 'default',
-    enableNetworkView: true,
-    ethereum: {
-        appName: 'uniswap-position-tools',
-        chains: networks[currentEnv],
-        providers: [providers.walletConnectProvider({ projectId })]
-    }
+export const ethereumClient = new EthereumClient(wagmiClient, chains)
+
+export const web3config = {
+    projectId: projectId,
+    ethereumClient: ethereumClient,
+    enableNetworkView: true
 }
-
-export default web3config

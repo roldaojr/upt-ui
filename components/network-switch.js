@@ -1,7 +1,8 @@
 import { useCallback } from 'react'
-import { useNetwork, useSwitchNetwork } from '@web3modal/react'
+import { useNetwork, useSwitchNetwork } from 'wagmi'
 import { Dropdown, Image, Text } from '@nextui-org/react'
 import { chainIcons } from '../web3config'
+import { useWeb3ModalNetwork } from '@web3modal/react'
 
 const networkIcon = chain => {
   const devChains = ['localhost', 'hardhat', 'goerli']
@@ -12,18 +13,15 @@ const networkIcon = chain => {
 }
 
 const NetworkSelector = () => {
-    const { network } = useNetwork()
+    const network = useNetwork()
     const { switchNetwork } = useSwitchNetwork()
     const changeNetwork = useCallback(item => {
-      switchNetwork({ chainId: parseInt(item.currentKey) })
+      switchNetwork(parseInt(item.currentKey))
     }, [switchNetwork])
+    console.log(network?.chains)
 
-    let buttonOpts = {}
-    if(network?.chain?.unsupported) {
-      buttonOpts = {color: "error"}
-    } else {
-      buttonOpts = {color: "primary", icon: networkIcon(network?.chain)}
-    }
+    const buttonOpts = (network?.chain?.unsupported) ? {color: "error"}
+    : {color: "primary", icon: networkIcon(network?.chain)}
 
     return (
       <Dropdown>

@@ -1,14 +1,12 @@
 import { Fragment } from 'react'
-import { Navbar, Spacer, useTheme } from '@nextui-org/react'
-import { Web3Modal, ConnectButton, useAccount } from '@web3modal/react'
+import { Navbar, Spacer } from '@nextui-org/react'
+import { AccountButton, ConnectButton } from '@web3modal/react'
+import { useAccount } from 'wagmi'
 import NetworkSelector from './network-switch'
-import AccountStatus from './account-status'
-import web3config from '../web3config'
 import { ThemeSwitch } from './theme-switch'
 
 const TopBar = () => {
-  const { account } = useAccount()
-  const { isDark } = useTheme()
+  const { isConnected } = useAccount()
 
   return (
     <Fragment>
@@ -17,19 +15,18 @@ const TopBar = () => {
         <Navbar.Brand showIn="xs">UPT</Navbar.Brand>
         <Navbar.Content>
           <ThemeSwitch/>
-          {account.isConnected ? (
+          {isConnected ? (
             <>
               <NetworkSelector/>
-              <AccountStatus/>
+              <AccountButton/>
             </>
           ) : (
             <Navbar.Content>
-              <ConnectButton />
+              <ConnectButton icon="hide"/>
             </Navbar.Content>
           )}
         </Navbar.Content>
       </Navbar>
-      <Web3Modal config={{...web3config, theme: isDark ? 'dark' : 'light'}} />
       <Spacer/>
     </Fragment>
   )

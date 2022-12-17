@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from 'react-query'
 import { Button } from '@nextui-org/react'
-import { useNetwork } from '@web3modal/react'
-import { SignerCtrl } from '@web3modal/core'
+import { useNetwork } from 'wagmi'
+import { getClient } from '@wagmi/core'
 
 const testNetworks = ["localhost", "hardhat"]
 
@@ -10,8 +10,8 @@ export const TestButton = () => {
     const queryClient = useQueryClient()
 
     const getToken = useMutation(async () => {
-        const signer = await SignerCtrl.fetch()
-        const address = await signer.getAddress()
+        const client = getClient()
+        const address = await client.connector.getAccount()
         return fetch(`/api/requestTestToken?destAddress=${address}`)
     }, {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["positions"] })

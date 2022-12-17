@@ -1,13 +1,15 @@
-import { SignerCtrl } from '@web3modal/core'
 import { useMutation, useQueryClient } from 'react-query'
-import { getAppContract, transactionToast } from '../utils'
+import { getAppContract } from '../utils'
 
 export const useContractMutation = (
     contractName, functionName, options = {}
 ) => {
     const queryClient = useQueryClient()
     return useMutation(async args => {
-        const signer = await SignerCtrl.fetch()
+        const client = getClient()
+        const signer = await client.connector?.getSigner?.({
+            chainId: client.chainId
+        })
         const chainId = await signer.getChainId()
         const contract = getAppContract(contractName, chainId)
         return contract.connect(signer)[functionName](...args)

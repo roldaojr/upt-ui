@@ -3,7 +3,7 @@ import { useCallback } from 'react'
 import {
   Container, Button, Loading, Card, Grid, Row, Text
 } from '@nextui-org/react'
-import { TokenLogo } from '../../components/token-logo'
+import { TokenAmount } from '../../components/token-logo'
 import {
   useFetchPostionById, useApprovePosition
 } from '../../hooks/uniswap-positions'
@@ -40,14 +40,8 @@ const CompoundPage = () => {
             <Loading type="points" size="xl" />
           ) : (
             <>
-              <Row>
-                <TokenLogo address={token0?.address} size="xs"/>
-                {tokensOwed0?.toSignificant()} {token0?.symbol}
-              </Row>
-              <Row>
-                <TokenLogo address={token1?.address} size="xs"/>
-                {tokensOwed1?.toSignificant()} {token1?.symbol}
-              </Row>
+              <TokenAmount token={token0} amount={tokensOwed0?.toSignificant(4)}/>
+              <TokenAmount token={token1} amount={tokensOwed1?.toSignificant(4)}/>
             </>
           )}
         </Card.Body>

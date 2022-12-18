@@ -6,7 +6,7 @@ import { getClient } from '@wagmi/core'
 const testNetworks = ["localhost", "hardhat"]
 
 export const TestButton = () => {
-    const { network } = useNetwork()
+    const { chain } = useNetwork()
     const queryClient = useQueryClient()
 
     const getToken = useMutation(async () => {
@@ -16,7 +16,8 @@ export const TestButton = () => {
     }, {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ["positions"] })
     })
-    if(!testNetworks.includes(network?.chain?.network)) return null
+
+    if(!testNetworks.includes(chain?.network)) return null
 
     return (
         <Button

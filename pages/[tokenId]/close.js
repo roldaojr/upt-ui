@@ -11,10 +11,12 @@ import { useContractMutation } from '../../hooks/app-contracts'
 const RemoveLiqSwapPage = () => {
   const router = useRouter()
   const { tokenId } = router.query
-  const { data: position } = useFetchPostionById(tokenId)
+  const {
+    data: position, isSuccess
+  } = useFetchPostionById(tokenId, {enabled: router.isReady})
   const { pool: { token0, token1 } } = position || {pool: {}}
   // approval hooks
-  const isApproved = useIsApproved(tokenId)
+  const isApproved = useIsApproved(tokenId, {enabled: router.isReady})
   const approve = useApprovePosition(tokenId)
   // contract hook
   const removeLiqSwap = useContractMutation(
@@ -65,11 +67,11 @@ const RemoveLiqSwapPage = () => {
               <Grid xs={12}>
                 {isApproved.data ? (
                   <Button type="submit" size="lg" css={{ width: "$full" }}
-                    disabled={removeLiqSwap.isLoading}
+                    disabled={!isSuccess || removeLiqSwap.isLoading}
                   >Remove Liquidity and swap</Button>
                 ) : (
                   <Button size="lg" css={{ width: "$full" }}
-                    disabled={approve.isLoading}
+                    disabled={!isApproved.isSuccess || approve.isLoading}
                     onPress={() => approve.mutate()}
                   >Approve</Button>
                 )}

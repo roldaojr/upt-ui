@@ -11,8 +11,8 @@ export const TokenLogo = ({address, ...props}) => {
 
 export const TokenAmount = ({token, amount, size, ...props}) => {
     const tokenLogos = useTokenLogos()
-    const tokenLogo = tokenLogos.data?.get(token.address)
-    const text = `${amount} ${token.symbol}`
+    const tokenLogo = tokenLogos.data?.get(token?.address)
+    const text = `${amount} ${token?.symbol}`
     return (
         <User src={tokenLogo} name={text} {...props} size={size ?? "sm"}/>
     )

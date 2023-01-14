@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
-import { useAccount } from 'wagmi'
+import { useSigner } from 'wagmi'
 import { getClient } from '@wagmi/core'
 import { ethers } from 'ethers'
 import IUniswapV3Pool from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
@@ -75,7 +75,6 @@ const getPool = async (token0address, token1address, fee, provider) => {
     const token0 = await getToken(token0address, provider)
     const token1 = await getToken(token1address, provider)
     const poolAddress = Pool.getAddress(token0, token1, fee)
-    console.debug(`Pool address is ${poolAddress}`)
     const poolContract = new ethers.Contract(poolAddress, IUniswapV3Pool.abi, provider)
     const state = await getPoolState(poolContract)
     return new Pool(
@@ -88,41 +87,35 @@ const getPool = async (token0address, token1address, fee, provider) => {
     )
 }
 
-export const getPositionFees = async (id) => {
-    const signer = await getSigner()
-    const signerAddress = await signer.getAddress()
+export const getPositionFees = async (id, provider) => {
     const { amount0, amount1 } = await uniswapPositionManager.connect(
-        signer
+        provider
     ).callStatic.collect({
         tokenId: id,
-        recipient: signerAddress,
+        recipient: "0x1010101010101010101010101010101010101010",
         amount0Max: MAX_UINT128,
         amount1Max: MAX_UINT128
     })
     return [ amount0, amount1 ]
 }
 
-const getPosition = async id => {
-    const signer = await getSigner()
+const getPosition = async (id, provider) => {
     const {
         token0, token1, fee, liquidity, tickLower, tickUpper, ...extra
-    } = await uniswapPositionManager.connect(signer).positions(id)
-    const pool = await getPool(token0, token1, fee, signer)
+    } = await uniswapPositionManager.connect(provider).positions(id)
+    const pool = await getPool(token0, token1, fee, provider)
     const position = new Position({pool, liquidity, tickLower, tickUpper})
     for(let prop in extra) {
         position[prop] = extra[prop]
     }
-    const [ fees0, fees1 ] = await getPositionFees(id)
+    const [ fees0, fees1 ] = await getPositionFees(id, provider)
     position.tokensOwed0 = CurrencyAmount.fromRawAmount(pool.token0, fees0)
     position.tokensOwed1 = CurrencyAmount.fromRawAmount(pool.token1, fees1)
     position.id = id
     return position
 }
 
-export const getPositions = async () => {
-    const signer = await getSigner()
-    // signer is null. wallet not connected
-    if(!signer) return []
+export const getPositions = async (signer) => {
     const address = await signer.getAddress()
     const positionManager = uniswapPositionManager.connect(signer)
     const positionCount = await positionManager.balanceOf(address)
@@ -134,9 +127,7 @@ export const getPositions = async () => {
     return positions.sort((a, b) => a - b)
 }
 
-export const isApprovedForAll = async () => {
-    const signer = await getSigner()
-    if(!signer) return false
+export const isApprovedForAll = async (signer) => {
     const address = await signer.getAddress()
     const chainId = await signer.getChainId()
     return uniswapPositionManager.connect(signer).isApprovedForAll(
@@ -144,9 +135,7 @@ export const isApprovedForAll = async () => {
     )
 }
 
-export const isApprovedToken = async (tokenId) => {
-    if(!tokenId) return false
-    const signer = await getSigner()
+export const isApprovedToken = async (tokenId, signer) => {
     const positionManager = uniswapPositionManager.connect(signer)
     const approvedTo = await positionManager.getApproved(tokenId)
     return (approvedTo == getAppContractAddress(
@@ -155,25 +144,28 @@ export const isApprovedToken = async (tokenId) => {
 }
 
 export const useFetchPostionById = (id, options = {}) => {
-    options.enabled = !!id
+    const { data: signer } = useSigner()
+    options.enabled = !!id && !!signer
     return useQuery(
-        ["positions", id], () => getPosition(id),
+        ["positions", id],
+        () => getPosition(id, signer),
         onErrorToast(options)
     )
 }
 
 export const useFetchPositions = (options = {}) => {
-    const { isConnected } = useAccount()
+    const { data: signer } = useSigner()
+    options.enabled = !!signer
     const positionsIds = useQuery(
         ["positions"],
-        getPositions,
-        {enabled: isConnected}
+        () => getPositions(signer),
+        options
     )
     const positions = useQueries(
         (positionsIds.data || []).map(id => ({
             queryKey: ['positions', id],
-            queryFn: () => getPosition(id),
-            enabled: isConnected && !positionsIds.isLoading,
+            queryFn: () => getPosition(id, signer),
+            enabled: !!signer && positionsIds.isSuccess,
             ...onErrorToast(options)
         }))
     )
@@ -190,15 +182,22 @@ export const useFetchPositions = (options = {}) => {
     }
 }
 
-export const useFetchApprovedForAll = (options) => {
-    return useQuery(["approved-for-all"], isApprovedForAll, onErrorToast(options))
+export const useIsApprovedForAll = (options = {}) => {
+    const { data: signer } = useSigner()
+    options.enabled = !!signer
+    return useQuery(
+        ["approved-for-all"],
+        () => isApprovedForAll(signer),
+        onErrorToast(options)
+    )
 }
 
 export const useApprovalForAll = (options = {}) => {
     const queryClient = useQueryClient()
-    const approved = useFetchApprovedForAll(options)
+    const { data: signer } = useSigner()
+    options.enabled = !!signer
+    const approved = useIsApprovedForAll(options)
     const approval = useMutation(["approve-for-all"], async () => {
-        const signer = await getSigner()
         const chainId = await signer.getChainId()
         return uniswapPositionManager.connect(signer).setApprovalForAll(
             getAppContractAddress("UniswapPositionTools", chainId), !approved.data
@@ -222,10 +221,11 @@ export const useApprovalForAll = (options = {}) => {
 }
 
 export const useIsApproved = (tokenId, options = {}) => {
-    const allapproved = useApprovalForAll(options)
+    const { data: signer } = useSigner()
+    const allapproved = useIsApprovedForAll()
     const approvved = useQuery(["positions", tokenId, "approved"], async () => {
-        return isApprovedToken(tokenId)
-    }, onErrorToast({...options, enabled: !allapproved.isLoading}))
+        return isApprovedToken(tokenId, signer)
+    }, onErrorToast({...options, enabled: !!signer}))
     return {
         data: allapproved.data || approvved.data,
         isLoading: allapproved.isLoading || approvved.isLoading,
@@ -235,9 +235,10 @@ export const useIsApproved = (tokenId, options = {}) => {
 
 export const useApprovePosition = (tokenId, options = {}) => {
     const queryClient = useQueryClient()
-    const approved = useIsApproved(tokenId)
+    const { data: signer } = useSigner()
+    options.enabled = !!signer
+    const approved = useIsApproved(tokenId, signer)
     const approval = useMutation(["approve", tokenId], async () => {
-        const signer = await getSigner()
         const address = getAppContractAddress(
             'UniswapPositionTools', await signer.getChainId()
         )

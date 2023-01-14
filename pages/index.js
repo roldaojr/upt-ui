@@ -22,7 +22,7 @@ const PositionListPage = () => {
             <RefreshButton/>
           </Row>
           <Spacer/>
-          {positions.isLoading ? (
+          {!positions?.isSuccess ? (
             <Row justify='center'>
               <Loading
                 loadingCss={{ $$loadingSize: "100px", $$loadingBorder: "10px" }}

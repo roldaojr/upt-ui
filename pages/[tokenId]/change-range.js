@@ -1,5 +1,5 @@
 import { useRouter } from 'next/router'
-import { Button, Input, Card, Text, Container, Grid } from '@nextui-org/react'
+import { Button, Input, Card, Text, Container, Grid, Row, Avatar } from '@nextui-org/react'
 import { useForm } from 'react-hook-form'
 import { useEffect } from 'react'
 import {
@@ -7,15 +7,18 @@ import {
 } from '../../hooks/uniswap-positions'
 import { useContractMutation } from '../../hooks/app-contracts'
 import { tryParseTick } from '../../lib/price-utils'
+import { TokenLogo } from '../../components/token-logo'
 
 
 const ChangeRangePage = () => {
   const router = useRouter()
   const { tokenId } = router.query
-  const { data: position } = useFetchPostionById(tokenId)
+  const {
+    data: position, isSuccess
+  } = useFetchPostionById(tokenId, {enabled: router.isReady})
   const { pool } = position || {pool: {}}
   // token approve hooks
-  const isApproved = useIsApproved(tokenId)
+  const isApproved = useIsApproved(tokenId, {enabled: router.isReady})
   const approve = useApprovePosition(tokenId)
   // contract hook
   const remint = useContractMutation(
@@ -57,19 +60,36 @@ const ChangeRangePage = () => {
             <Text h3>Change Price Range</Text>
           </Card.Header>
           <Card.Body>
-            <Input size="lg" input="number" label="Min Price" {...register("priceLower")} />
-            <Input size="lg" input="number" label="Max price" {...register("priceUpper")} />
+            <div tex>
+              <Avatar.Group animated={false}>
+                <TokenLogo address={pool?.token0?.address} size="sm"/>
+                <TokenLogo address={pool?.token1?.address} size="sm"/>
+              </Avatar.Group>
+              <Text h4>
+                {pool?.token0?.symbol} / {pool?.token1?.symbol} {pool?.fee / 10000}%
+              </Text>
+            </div>
+            <Input
+              size="lg" input="number" label="Min Price"
+              {...register("priceLower")}
+              disabled={!isSuccess}
+            />
+            <Input
+              size="lg" input="number" label="Max price"
+              {...register("priceUpper")}
+              disabled={!isSuccess}
+            />
           </Card.Body>
           <Card.Footer>
           <Grid.Container gap={1}>
               <Grid xs={12}>
                 {!!isApproved.data ? (
                   <Button type="submit" size="lg" css={{ width: "$full" }}
-                    disabled={remint.isLoading}
+                    disabled={!isSuccess || remint.isLoading}
                   >Change range</Button>
                 ) : (
                   <Button size="lg" css={{ width: "$full" }}
-                    disabled={approve.isLoading}
+                    disabled={!isApproved.isSuccess || approve.isLoading}
                     onPress={() => approve.mutate()}
                   >Approve</Button>
                 )}

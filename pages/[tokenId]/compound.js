@@ -12,12 +12,12 @@ import { useContractMutation } from '../../hooks/app-contracts'
 const CompoundPage = () => {
   const router = useRouter()
   const { tokenId } = router.query
-  const position = useFetchPostionById(tokenId)
+  const position = useFetchPostionById(tokenId, {enabled: router.isReady})
   const {
     pool: { token0, token1 }, tokensOwed0, tokensOwed1
   } = position.data || {pool: {}}
   // approval hook
-  const approval = useApprovePosition(tokenId)
+  const approval = useApprovePosition(tokenId, {enabled: router.isReady})
   // contract hook
   const compound = useContractMutation(
     "UniswapPositionTools",
@@ -36,7 +36,7 @@ const CompoundPage = () => {
           <Text h3>Collect and compound fees?</Text>
         </Card.Header>
         <Card.Body>
-          {position.isLoading ? (
+          {!position?.isSuccess ? (
             <Loading type="points" size="xl" />
           ) : (
             <>
@@ -50,12 +50,12 @@ const CompoundPage = () => {
             <Grid xs={12}>
               {approval.data ? (
                 <Button size="lg" css={{ width: "$full" }}
-                  disabled={position.isLoading || compound.isLoading}
+                  disabled={!position.isSuccess || compound.isLoading}
                   onPress={onConfirm}
                 >Compound</Button>
               ) : (
                 <Button size="lg" css={{ width: "$full" }}
-                  disabled={position.isLoading || approval.isLoading}
+                  disabled={!position.isSuccess || approval.isLoading}
                   onPress={() => approval.mutate()}
                 >Approve</Button>
               )}

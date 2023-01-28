@@ -18,8 +18,7 @@ const ChangeRangePage = () => {
   } = useFetchPostionById(tokenId, {enabled: router.isReady})
   const { pool } = position || {pool: {}}
   // token approve hooks
-  const isApproved = useIsApproved(tokenId, {enabled: router.isReady})
-  const approve = useApprovePosition(tokenId)
+  const approval = useApprovePosition(tokenId, {enabled: router.isReady})
   // contract hook
   const remint = useContractMutation(
     "UniswapPositionTools",
@@ -83,14 +82,14 @@ const ChangeRangePage = () => {
           <Card.Footer>
           <Grid.Container gap={1}>
               <Grid xs={12}>
-                {!!isApproved.data ? (
+                {!!approval.data ? (
                   <Button type="submit" size="lg" css={{ width: "$full" }}
                     disabled={!isSuccess || remint.isLoading}
                   >Change range</Button>
                 ) : (
                   <Button size="lg" css={{ width: "$full" }}
-                    disabled={!isApproved.isSuccess || approve.isLoading}
-                    onPress={() => approve.mutate()}
+                    disabled={!isSuccess || approval.isLoading}
+                    onPress={() => approval.mutate()}
                   >Approve</Button>
                 )}
               </Grid>

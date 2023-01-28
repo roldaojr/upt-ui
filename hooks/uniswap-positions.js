@@ -1,5 +1,5 @@
 import { useMutation, useQueries, useQuery, useQueryClient } from 'react-query'
-import { useSigner } from 'wagmi'
+import { useNetwork, useSigner } from 'wagmi'
 import { getClient } from '@wagmi/core'
 import { ethers } from 'ethers'
 import IUniswapV3Pool from '@uniswap/v3-core/artifacts/contracts/UniswapV3Pool.sol/UniswapV3Pool.json'
@@ -16,11 +16,6 @@ export const uniswapPositionManager = new ethers.Contract(
     '0xC36442b4a4522E871399CD717aBDD847Ab11FE88',
     INonfungiblePositionManager.abi
 )
-
-const getSigner = async () => {
-    const client = getClient()
-    return client.connector?.getSigner?.({ chainId: client.chainId })
-}
 
 const getPoolImmutables = async(poolContract) => {
     console.debug(`Getting pool immulatables`)
@@ -143,11 +138,12 @@ export const isApprovedToken = async (tokenId, signer) => {
     ))
 }
 
-export const useFetchPostionById = (id, options = {}) => {
+export const useFetchPostionById = (id, options = {enabled: true}) => {
     const { data: signer } = useSigner()
-    options.enabled = !!id && !!signer
+    const network = useNetwork()
+    options.enabled = options.enabled && !!id && !!signer && !!network?.chain?.id
     return useQuery(
-        ["positions", id],
+        ["positions", network?.chain?.id, id],
         () => getPosition(id, signer),
         onErrorToast(options)
     )
@@ -155,15 +151,16 @@ export const useFetchPostionById = (id, options = {}) => {
 
 export const useFetchPositions = (options = {}) => {
     const { data: signer } = useSigner()
-    options.enabled = !!signer
+    const network = useNetwork()
+    options.enabled = !!signer && !!network?.chain?.id
     const positionsIds = useQuery(
-        ["positions"],
+        ["positions", network?.chain?.id],
         () => getPositions(signer),
         options
     )
     const positions = useQueries(
         (positionsIds.data || []).map(id => ({
-            queryKey: ['positions', id],
+            queryKey: ['positions', network?.chain?.id, id],
             queryFn: () => getPosition(id, signer),
             enabled: !!signer && positionsIds.isSuccess,
             ...onErrorToast(options)
@@ -184,9 +181,10 @@ export const useFetchPositions = (options = {}) => {
 
 export const useIsApprovedForAll = (options = {}) => {
     const { data: signer } = useSigner()
-    options.enabled = !!signer
+    const network = useNetwork()
+    options.enabled = !!signer && !!network?.chain?.id
     return useQuery(
-        ["approved-for-all"],
+        ["approved-for-all", network?.chain?.id],
         () => isApprovedForAll(signer),
         onErrorToast(options)
     )
@@ -195,20 +193,25 @@ export const useIsApprovedForAll = (options = {}) => {
 export const useApprovalForAll = (options = {}) => {
     const queryClient = useQueryClient()
     const { data: signer } = useSigner()
-    options.enabled = !!signer
+    const network = useNetwork()
+    options.enabled = !!signer && !!network?.chain?.id
     const approved = useIsApprovedForAll(options)
-    const approval = useMutation(["approve-for-all"], async () => {
-        const chainId = await signer.getChainId()
-        return uniswapPositionManager.connect(signer).setApprovalForAll(
-            getAppContractAddress("UniswapPositionTools", chainId), !approved.data
-        )
-    }, transactionToast({
-        ...options,
-        onSuccess: (...args) => {
-            queryClient.invalidateQueries(["approved-for-all"])
-            if(options.onSuccess) options.onSuccess(...args)
-        }
-    }))
+    const approval = useMutation(
+        ["approve-for-all", network?.chain?.id],
+        async () => {
+            const chainId = await signer.getChainId()
+            return uniswapPositionManager.connect(signer).setApprovalForAll(
+                getAppContractAddress("UniswapPositionTools", chainId), !approved.data
+            )
+        },
+        transactionToast({
+            ...options,
+            onSuccess: (...args) => {
+                queryClient.invalidateQueries(["approved-for-all", network?.chain?.id])
+                if(options.onSuccess) options.onSuccess(...args)
+            }
+        })
+    )
     return {
         data: approved.data,
         isLoading: approved.isLoading || approval.isLoading,
@@ -220,12 +223,18 @@ export const useApprovalForAll = (options = {}) => {
     }
 }
 
-export const useIsApproved = (tokenId, options = {}) => {
+export const useIsApproved = (tokenId, options = {enabled: true}) => {
     const { data: signer } = useSigner()
+    const network = useNetwork()
+    options.enabled = options.enabled && !!signer && !!network?.chain?.id
     const allapproved = useIsApprovedForAll()
-    const approvved = useQuery(["positions", tokenId, "approved"], async () => {
-        return isApprovedToken(tokenId, signer)
-    }, onErrorToast({...options, enabled: !!signer}))
+    const approvved = useQuery(
+        ["approved", network?.chain?.id, tokenId],
+        async () => {
+            return isApprovedToken(tokenId, signer)
+        },
+        onErrorToast({...options, enabled: !!signer})
+    )
     return {
         data: allapproved.data || approvved.data,
         isLoading: allapproved.isLoading || approvved.isLoading,
@@ -236,22 +245,27 @@ export const useIsApproved = (tokenId, options = {}) => {
 export const useApprovePosition = (tokenId, options = {}) => {
     const queryClient = useQueryClient()
     const { data: signer } = useSigner()
-    options.enabled = !!signer
+    const network = useNetwork()
+    options.enabled = !!signer && !!network?.chain?.id
     const approved = useIsApproved(tokenId, signer)
-    const approval = useMutation(["approve", tokenId], async () => {
-        const address = getAppContractAddress(
-            'UniswapPositionTools', await signer.getChainId()
-        )
-        return uniswapPositionManager.connect(signer).approve(
-            address, tokenId, { gasLimit: 500000 }
-        )
-    }, transactionToast({
-        ...options,
-        onSuccess: (...args) => {
-            queryClient.invalidateQueries(["positions", tokenId, "approved"])
-            if(options.onSuccess) options.onSuccess(...args)
-        }
-    }))
+    const approval = useMutation(
+        ["approved", network?.chain?.id, tokenId],
+        async () => {
+            const address = getAppContractAddress(
+                'UniswapPositionTools', network?.chain?.id
+            )
+            return uniswapPositionManager.connect(signer).approve(
+                address, tokenId, { gasLimit: 500000 }
+            )
+        },
+        transactionToast({
+            ...options,
+            onSuccess: (...args) => {
+                queryClient.invalidateQueries(["approved", tokenId])
+                if(options.onSuccess) options.onSuccess(...args)
+            }
+        })
+    )
     return {
         data: approved.data,
         isLoading: approval.isLoading || approved.isLoading,

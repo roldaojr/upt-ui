@@ -16,8 +16,7 @@ const RemoveLiqSwapPage = () => {
   } = useFetchPostionById(tokenId, {enabled: router.isReady})
   const { pool: { token0, token1 } } = position || {pool: {}}
   // approval hooks
-  const isApproved = useIsApproved(tokenId, {enabled: router.isReady})
-  const approve = useApprovePosition(tokenId)
+  const approval = useApprovePosition(tokenId, {enabled: router.isReady})
   // contract hook
   const removeLiqSwap = useContractMutation(
     "UniswapPositionTools",
@@ -65,14 +64,14 @@ const RemoveLiqSwapPage = () => {
           <Card.Footer>
             <Grid.Container gap={1}>
               <Grid xs={12}>
-                {isApproved.data ? (
+                {approval.data ? (
                   <Button type="submit" size="lg" css={{ width: "$full" }}
                     disabled={!isSuccess || removeLiqSwap.isLoading}
                   >Remove Liquidity and swap</Button>
                 ) : (
                   <Button size="lg" css={{ width: "$full" }}
-                    disabled={!isApproved.isSuccess || approve.isLoading}
-                    onPress={() => approve.mutate()}
+                    disabled={!isSuccess || approval.isLoading}
+                    onPress={() => approval.mutate()}
                   >Approve</Button>
                 )}
               </Grid>

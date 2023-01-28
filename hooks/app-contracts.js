@@ -1,6 +1,6 @@
 import { getClient } from '@wagmi/core'
 import { useMutation, useQueryClient } from 'react-query'
-import { TransactionModal } from '../components/transaction-modal'
+import { useTxModal } from '../contexts/TxModalContext'
 import { getAppContract } from '../utils'
 
 export const useContractMutation = (
@@ -8,8 +8,7 @@ export const useContractMutation = (
 ) => {
     const queryClient = useQueryClient()
     const { setStatus, setTx } = useTxModal()
-
-    mutationOptions = {
+    const mutationOptions = {
         ...options,
         onMutate: (...args) => {
             setStatus("send")
@@ -33,7 +32,7 @@ export const useContractMutation = (
         const signer = await client.connector?.getSigner()
         const contract = getAppContract(contractName, client.data.chain.id)
         return contract.connect(signer)[functionName](...args)
-    }, TransactionModal.mutationOptions(mutationOptions))
+    }, mutationOptions)
 }
 
 export default { useContractMutation }

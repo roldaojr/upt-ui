@@ -9,7 +9,7 @@ const TopBar = () => {
       <Navbar isCompact isBordered variant="sticky">
         <Navbar.Brand hideIn="xs">UniswapV3 positions toolbox</Navbar.Brand>
         <Navbar.Brand showIn="xs">UPT</Navbar.Brand>
-        <Navbar.Content>
+        <Navbar.Content gap="$3">
           <ThemeSwitch/>
           <Web3NetworkSwitch/>
           <Web3Button label="Connect Wallet" icon="show" />

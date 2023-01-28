@@ -3,25 +3,10 @@ import {
     EthereumClient, modalConnectors, walletConnectProvider
 } from "@web3modal/ethereum"
 import * as allchains from 'wagmi/chains'
-import { publicProvider } from 'wagmi/providers/public'
 import appContracts from './contracts.json'
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
     throw new Error('You need to provide NEXT_PUBLIC_PROJECT_ID env variable')
-}
-
-const trustWalletIcon = chainName => `https://raw.githubusercontent.com/trustwallet/assets/master/blockchains/${chainName}/info/logo.png`
-
-export const chainIcons = {
-    unknown: trustWalletIcon("ethereum"),
-    mainnet: trustWalletIcon("ethereum"),
-    polygon: trustWalletIcon("polygon"),
-    arbitrum: trustWalletIcon("arbitrum"),
-    optimism: trustWalletIcon("optimism"),
-    // testnets
-    localhost: trustWalletIcon("ethereum"),
-    goerli: trustWalletIcon("ethereum"),
-    polygonMumbai: trustWalletIcon("polygon"),
 }
 
 const availableChains = Object.values(allchains).filter(

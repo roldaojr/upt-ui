@@ -5,7 +5,6 @@ import { useTxModal } from '../contexts/TxModalContext'
 import { BiErrorCircle } from 'react-icons/bi'
 import { BsCheck2Circle } from 'react-icons/bs'
 
-
 export const TransactionModal = () => {
   const txStatus = {
     "send": "Sending transaction",
@@ -64,29 +63,6 @@ export const TransactionModal = () => {
       </Modal.Footer>
     </Modal>
   )
-}
-
-
-TransactionModal.mutationOptions = (options) => {
-  const { setStatus, setTx } = useTxModal()
-
-  return {
-      ...options,
-      onMutate: (...args) => {
-          setStatus("send")
-          if(options?.onMutate) options.onMutate(...args)
-      },
-      onError: (...args) => {
-          setStatus("error")
-          setTx(args[0])
-          if(options?.onError) options.onError(...args)
-      },
-      onSuccess: (...args) => {
-          setStatus("success")
-          setTx(args[0])
-          if(options?.onSuccess) options.onSuccess(...args)
-      }
-  }
 }
 
 export default TransactionModal

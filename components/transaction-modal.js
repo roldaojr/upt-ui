@@ -29,7 +29,7 @@ export const TransactionModal = () => {
   const closeModal = useCallback(() => {
     setStatus(null)
     setTx(null)
-  }, [setStatus])
+  }, [setStatus, setTx])
 
   const openExplorer = useCallback(() => {
     window.open(`${explorer.url}/tx/${tx.hash}`)
@@ -88,6 +88,5 @@ TransactionModal.mutationOptions = (options) => {
       }
   }
 }
-
 
 export default TransactionModal

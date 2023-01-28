@@ -13,7 +13,7 @@ export const ThemeSwitch = () => {
   }, [setTheme])
   useEffect(() => {
     setTheme(systemTheme)
-  }, [])
+  }, [setTheme, systemTheme])
   return (
     <Switch
       color="default"

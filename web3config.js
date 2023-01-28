@@ -1,8 +1,9 @@
 import { configureChains, createClient } from "wagmi"
-import { EthereumClient, modalConnectors, walletConnectProvider } from "@web3modal/ethereum"
-import { InjectedConnector } from 'wagmi/connectors/injected'
-import { WalletConnectConnector } from 'wagmi/connectors/walletConnect'
+import {
+    EthereumClient, modalConnectors, walletConnectProvider
+} from "@web3modal/ethereum"
 import * as allchains from 'wagmi/chains'
+import { publicProvider } from 'wagmi/providers/public'
 import appContracts from './contracts.json'
 
 if (!process.env.NEXT_PUBLIC_PROJECT_ID) {
@@ -43,15 +44,14 @@ switch(process.env.NEXT_PUBLIC_VERCEL_ENV || process.env.NODE_ENV) {
 
 export const projectId = process.env.NEXT_PUBLIC_PROJECT_ID
 
-const { provider, webSocketProvider } = configureChains(
+const { provider } = configureChains(
     chains, [ walletConnectProvider({ projectId }) ]
 )
 
 export const wagmiClient = createClient({
     connectors: modalConnectors({ appName: "upt", chains }),
     autoConnect: true,
-    provider,
-    webSocketProvider
+    provider
 })
 
 export const ethereumClient = new EthereumClient(wagmiClient, chains)
@@ -59,5 +59,5 @@ export const ethereumClient = new EthereumClient(wagmiClient, chains)
 export const web3config = {
     projectId: projectId,
     ethereumClient: ethereumClient,
-    enableNetworkView: true
+    enableNetworkView: false
 }

@@ -5,7 +5,7 @@
       "chainId": "5",
       "contracts": {
         "UniswapPositionTools": {
-          "address": "0xd5646865a54D74d5fA4DcE17C9aCF07874Fb10da",
+          "address": "0x42772f54F89e2386FF80879D9A02d11Ba36C483f",
           "abi": [
             {
               "inputs": [
@@ -222,19 +222,6 @@
                   "internalType": "uint32",
                   "name": "",
                   "type": "uint32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "factory",
-              "outputs": [
-                {
-                  "internalType": "contract IUniswapV3Factory",
-                  "name": "",
-                  "type": "address"
                 }
               ],
               "stateMutability": "view",
@@ -448,7 +435,7 @@
       "chainId": "137",
       "contracts": {
         "UniswapPositionTools": {
-          "address": "0xd5646865a54D74d5fA4DcE17C9aCF07874Fb10da",
+          "address": "0x42772f54F89e2386FF80879D9A02d11Ba36C483f",
           "abi": [
             {
               "inputs": [
@@ -665,19 +652,6 @@
                   "internalType": "uint32",
                   "name": "",
                   "type": "uint32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "factory",
-              "outputs": [
-                {
-                  "internalType": "contract IUniswapV3Factory",
-                  "name": "",
-                  "type": "address"
                 }
               ],
               "stateMutability": "view",
@@ -891,7 +865,7 @@
       "chainId": "1337",
       "contracts": {
         "UniswapPositionTools": {
-          "address": "0x6b800b518Ab47e54976F2dbF4Ca830509F504f4d",
+          "address": "0x9Ed32d29DB2559A20390a89997EE3a2804124138",
           "abi": [
             {
               "inputs": [
@@ -1108,19 +1082,6 @@
                   "internalType": "uint32",
                   "name": "",
                   "type": "uint32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "factory",
-              "outputs": [
-                {
-                  "internalType": "contract IUniswapV3Factory",
-                  "name": "",
-                  "type": "address"
                 }
               ],
               "stateMutability": "view",
@@ -1333,13 +1294,13 @@
       "contracts": {}
     }
   ],
-  "80001": [
+  "42161": [
     {
-      "name": "mumbai",
-      "chainId": "80001",
+      "name": "arbitrum",
+      "chainId": "42161",
       "contracts": {
         "UniswapPositionTools": {
-          "address": "0xd5646865a54D74d5fA4DcE17C9aCF07874Fb10da",
+          "address": "0x42772f54F89e2386FF80879D9A02d11Ba36C483f",
           "abi": [
             {
               "inputs": [
@@ -1556,19 +1517,6 @@
                   "internalType": "uint32",
                   "name": "",
                   "type": "uint32"
-                }
-              ],
-              "stateMutability": "view",
-              "type": "function"
-            },
-            {
-              "inputs": [],
-              "name": "factory",
-              "outputs": [
-                {
-                  "internalType": "contract IUniswapV3Factory",
-                  "name": "",
-                  "type": "address"
                 }
               ],
               "stateMutability": "view",
